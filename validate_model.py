@@ -12,7 +12,7 @@ from os.path import isfile, join
 from train_models import k_fold
 import itertools
 import matplotlib.pyplot as plt
-
+import bz2
 
 
 
@@ -30,9 +30,16 @@ SVMs = {}
 for i, svm in enumerate(pickled_svm):
 	SVMs[i] = pickle.load(open(model_folder + '\\' + svm, 'rb'))
 
-final_validation = pickle.load(open(model_folder+r'\test_set.txt','rb'))
-final_validation_labels = pickle.load(open(model_folder+r'\test_labels.txt','rb'))
-final_pic_names = pickle.load(open(model_folder+r'\test_pic_names.txt','rb'))
+with bz2.BZ2File(model_folder+r'\test_set.pbz2','r') as f:
+  final_validation = pickle.load(f)
+with bz2.BZ2File(model_folder+r'\test_labels.pbz2','r') as f:
+  final_validation_labels = pickle.load(f)
+with bz2.BZ2File(model_folder+r'\test_pic_names.pbz2','r') as f:
+  final_pic_names = pickle.load(f)
+
+
+
+
 
 print("Final model validation in process...")
 predictions = np.array([],dtype=str)
@@ -94,10 +101,10 @@ def plot_confusion_matrix(cm, classes,
                           normalize=False,
                           title='Confusion matrix',
                           cmap=plt.cm.Blues):
-    """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    """
+    
+    #This function prints and plots the confusion matrix.
+    #Normalization can be applied by setting `normalize=True`.
+    
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
@@ -145,3 +152,4 @@ plt.show()
 print("All tasks completed succesfully!")
 print("Total time passed: " + str(time.time()-start))
 print("Miika haisee!")
+

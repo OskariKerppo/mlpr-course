@@ -9,11 +9,12 @@ import pickle
 from collections import Counter
 import time
 import os
+import bz2
 
 code_folder = os.getcwd()
 model_folder = code_folder + r'\Trainded_Models'
 
-k_fold = 3 # CHANGE TO 10 IN FINAL VERSION!!!
+k_fold = 2 # CHANGE TO 10 IN FINAL VERSION!!!
 
 
 def main():
@@ -64,18 +65,18 @@ def main():
 		print(training_labels)
 		clf.fit(training_data,training_labels)
 		SVMs[i] = clf
-		with open(model_folder + r'\svm_'+str(i)+'.txt','wb') as file:
+		with open(model_folder + r'\svm_'+str(i)+'.pickle','wb') as file:
 			pickle.dump(clf,file)
 		print("Model "+ str(i+1)+" trained!")
 		print("Time passed: " + str(time.time()-start))
 
 	print("All models trained!")
 
-	with open(model_folder + r'\test_set.txt','wb') as file:
+	with bz2.BZ2File(model_folder + r'\test_set.pbz2','w') as file:
 		pickle.dump(final_validation,file)
-	with open(model_folder + r'\test_labels.txt','wb') as file:
+	with bz2.BZ2File(model_folder + r'\test_labels.pbz2','wb') as file:
 		pickle.dump(final_validation_labels,file)
-	with open(model_folder + r'\test_pic_names.txt','wb') as file:
+	with bz2.BZ2File(model_folder + r'\test_pic_names.pbz2','wb') as file:
 		pickle.dump(final_pic_names,file)
 
 if __name__ == "__main__":
