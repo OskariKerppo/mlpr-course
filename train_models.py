@@ -4,6 +4,7 @@
 import read_yale
 from sklearn import svm
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import accuracy_score
 import numpy as np
 import pandas as pd
 import pickle
@@ -15,7 +16,7 @@ import bz2
 code_folder = os.getcwd()
 model_folder = code_folder + r'\Trainded_Models'
 
-k_fold = 10 # CHANGE TO 10 IN FINAL VERSION!!!
+k_fold = 3 # CHANGE TO 10 IN FINAL VERSION!!!
 
 
 def main():
@@ -53,7 +54,6 @@ def main():
 	#TRAIN 10 SVMs
 	print("Training SVMs...")
 	accuracies = []
-	SVMs = {}
 	for i in range(k_fold):
 		print("Training model: " + str(i+1)+ "...")
 		formatted = False
@@ -73,9 +73,8 @@ def main():
 		#print(training_labels)
 		clf.fit(training_data,training_labels)
 		acc_pred = clf.predict(validation_data)
-		acc = sklearn.metrics.accuracy_score(validation_labels,acc_pred)
+		acc = accuracy_score(validation_labels,acc_pred)
 		accuracies.append(acc)
-		SVMs[i] = clf
 		with open(model_folder + r'\svm_'+str(i)+'.pickle','wb') as file:
 			pickle.dump(clf,file)
 		print("Model "+ str(i+1)+" trained!")
