@@ -3,6 +3,7 @@
 
 import read_yale
 from sklearn import svm
+from sklearn.model_selection import cross_val_score
 import numpy as np
 import pandas as pd
 import pickle
@@ -14,7 +15,7 @@ import bz2
 code_folder = os.getcwd()
 model_folder = code_folder + r'\Trainded_Models'
 
-k_fold = 2 # CHANGE TO 10 IN FINAL VERSION!!!
+k_fold = 10 # CHANGE TO 10 IN FINAL VERSION!!!
 
 
 def main():
@@ -27,6 +28,12 @@ def main():
 	final_validation_labels = final_validation.index.get_level_values('person').values
 	final_pic_names = final_validation.index.get_level_values('pic_name').values
 	final_validation = final_validation.values
+
+	total_training = images
+	total_labels = total_training.index.get_level_values('person').values
+	total_training = total_training.values
+
+
 	print("Loaded dataset and separated final validation data")
 	print("Time passed: " + str(time.time()-start))
 	#We use 10-fold cross-validation. The accuracy of the 10 SVM's is then calculated on majority vote on final 
@@ -45,6 +52,7 @@ def main():
 	print("Time passed: " + str(time.time()-start))
 	#TRAIN 10 SVMs
 	print("Training SVMs...")
+	accuracies = []
 	SVMs = {}
 	for i in range(k_fold):
 		print("Training model: " + str(i+1)+ "...")
@@ -61,14 +69,25 @@ def main():
 				training_data = np.vstack([training_data, k_fold_data[i]])
 				training_labels = np.append(training_labels, k_fold_labels[i])
 		clf = svm.LinearSVC()
-		print(training_data)
-		print(training_labels)
+		#print(training_data)
+		#print(training_labels)
 		clf.fit(training_data,training_labels)
+		acc_pred = clf.predict(validation_data)
+		acc = sklearn.metrics.accuracy_score(validation_labels,acc_pred)
+		accuracies.append(acc)
 		SVMs[i] = clf
 		with open(model_folder + r'\svm_'+str(i)+'.pickle','wb') as file:
 			pickle.dump(clf,file)
 		print("Model "+ str(i+1)+" trained!")
 		print("Time passed: " + str(time.time()-start))
+
+	with open(model_folder+r'\accuracies.pickle','wb') as f:
+		pickle.dump(accuracies,f)
+	print("Cross validation ready. Training final model...")
+	clf = svm.LinearSVC()
+	clf.fit(total_training,total_labels)
+	with open(model_folder + r'\svm_total.pickle','wb') as file:
+		pickle.dump(clf,file)
 
 	print("All models trained!")
 
