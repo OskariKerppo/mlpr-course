@@ -16,7 +16,7 @@ import bz2
 code_folder = os.getcwd()
 model_folder = code_folder + r'\Trainded_Models'
 
-k_fold = 3 # CHANGE TO 10 IN FINAL VERSION!!!
+k_fold = 5 # CHANGE TO 10 IN FINAL VERSION!!!
 
 
 def main():
@@ -41,13 +41,17 @@ def main():
 	#validation data
 	k_fold_data = {}
 	k_fold_labels = {}
-	print("Separating remaining data into 10 subsets...")
+	k_f = k_fold
+	print("Separating remaining data into " + str(k_fold) + " subsets...")
 	#SPLIT TRAINING DATA TO 10 SUBSETS RANDOMLY
 	for i in range(k_fold):
-		k_fold_data[i] = images.sample(frac=1/k_fold)
+		print("Fraction to append: " + str(1/k_f))
+		k_fold_data[i] = images.sample(frac=1/k_f)
 		images = images.loc[~images.index.isin(k_fold_data[i].index)]
 		k_fold_labels[i] = k_fold_data[i].index.get_level_values('person').values
 		k_fold_data[i] = k_fold_data[i].values
+		k_f -= 1
+
 
 	print("Data ready.")
 	print("Time passed: " + str(time.time()-start))
@@ -59,21 +63,32 @@ def main():
 		formatted = False
 		for key in k_fold_data:
 			if key == i:
-				validation_data = k_fold_data[i]
-				validation_labels = k_fold_labels[i]
+				validation_data = k_fold_data[key]
+				validation_labels = k_fold_labels[key]
 			elif not formatted:
-				training_data = k_fold_data[i]
-				training_labels = k_fold_labels[i]
+				training_data = k_fold_data[key]
+				training_labels = k_fold_labels[key]
 				formatted = True
 			else:
-				training_data = np.vstack([training_data, k_fold_data[i]])
-				training_labels = np.append(training_labels, k_fold_labels[i])
+				training_data = np.vstack([training_data, k_fold_data[key]])
+				training_labels = np.append(training_labels, k_fold_labels[key])
+		print("Validation data and label shape: ")
+		print(validation_data.shape)
+		print(validation_labels.shape)
+		print("Training data and label shape: ")
+		print(training_data.shape)
+		print(training_labels.shape)
 		clf = svm.LinearSVC()
 		#print(training_data)
 		#print(training_labels)
 		clf.fit(training_data,training_labels)
 		acc_pred = clf.predict(validation_data)
 		acc = accuracy_score(validation_labels,acc_pred)
+		print("Accuracy: " + str(acc))
+		#print(validation_labels)
+		#print(validation_labels.shape)
+		#print(acc_pred)
+		#print(acc_pred.shape)
 		accuracies.append(acc)
 		with open(model_folder + r'\svm_'+str(i)+'.pickle','wb') as file:
 			pickle.dump(clf,file)
