@@ -12,15 +12,25 @@ from collections import Counter
 import time
 import os
 import bz2
+from os import listdir
+from os.path import isfile, join
 
 code_folder = os.getcwd()
 model_folder = code_folder + r'\Trainded_Models'
 
-k_fold = 5 # CHANGE TO 10 IN FINAL VERSION!!!
+k_fold = 10 # CHANGE TO 10 IN FINAL VERSION!!!
 
 
 def main():
 	print("Initializing...")
+	code_folder = os.getcwd()
+	model_folder = code_folder + r'\Trainded_Models'
+	files = [f for f in listdir(model_folder) if isfile(join(model_folder, f))]
+	for file in files:
+		try:
+			os.remove(model_folder+'\\'+file)
+		except:
+			print("File deletion failed! " + file)
 	start = time.time()
 	images, resolution = read_yale.get_croppedyale_as_df()
 	#We leave 20 % of the data for final validation. This is not used in training
