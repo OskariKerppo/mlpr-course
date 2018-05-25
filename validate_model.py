@@ -27,6 +27,9 @@ model_folder = code_folder + r'\Trainded_Models'
 files = [f for f in listdir(model_folder) if isfile(join(model_folder, f))]
 print(files)
 pickled_svm = [s for s in files if 'svm' in s and 'total' not in s]
+if not pickled_svm:
+     train_models.main()
+pickled_svm = [s for s in files if 'svm' in s and 'total' not in s]
 total_svm = [s for s in files if 'svm' in s and 'total' in s]
 total_svm = total_svm[0] 
 SVMs = {}
